@@ -7,7 +7,7 @@
  
 #Required software
  * GCC
- * Make
+ * GNU Make
  * ncurses headers 
 
 

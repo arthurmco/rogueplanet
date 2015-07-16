@@ -210,7 +210,7 @@ smart women in the Earth to help us building a colony out there \n\n";
 static char* intro_colony = 
 "In the bounds of Solar System, 2152\n\n\
 \tWe have created a council to choose the colony name\n\
-\tAfter some meetings, we defined it. Will be ";
+\tAfter some meetings, we defined it.\n\tWill be ";
 
 
 
