@@ -53,9 +53,9 @@ int draw_menu(const char* title, struct menu* menu_items, int size){
 	WINDOW* menu;
 	
 	if (title != NULL)
-		menu = newwin(size+5, (strlen(title)>20) ? strlen(title) : 20, 10, (x/2)-10);
+		menu = newwin(size+5, (strlen(title)>20) ? strlen(title) : 20, 5, (x/2)-10);
 	else
-		menu = newwin(size+5, 20, 10, (x/2)-10);
+		menu = newwin(size+5, 20, 5, (x/2)-10);
 	
 		
 	wrefresh(menu);
@@ -348,28 +348,41 @@ void new_game(){
 					default: {
 						int x, y;
 						
-						//Build
-						WINDOW* build = newwin(8, 50, 10, 20);
+						//Launch the Building Positions 'window'
+						WINDOW* build = newwin(10, 50, 5, 20);
 						echo();
 						wbkgd(build, COLOR_PAIR(PAIR_NORMAL));
 						box(build, ACS_VLINE, ACS_HLINE);
 						
-						mvwprintw(build, 0, 5, "Build Positions");
+						mvwprintw(build, 0, 5, "Building Positions");
 						wmove(build, 2, 3);
-						wprintw(build, "Type X position of desired building: ");
+						
+						wprintw(build, "Type X position of desired building,");
+						mvwprintw(build, 3, 3, "or -1 to cancel: ");
 						
 						wrefresh(stdscr);
 						wrefresh(build);
-			
-						
+										
 						wscanw(build, "%d", &x);
 						
-						wmove(build, 3, 3);
-						wprintw(build, "Type Y position of desired building: ");
-						wscanw(build, "%d", &y);
+						if (x < 0){
+							noecho();
+							continue;
+						}
+						
+						wmove(build, 5, 3);
+						wprintw(build, "Type Y position of desired building,");
+						mvwprintw(build, 6, 3, "or -1 to cancel: ");
 						
 						wrefresh(stdscr);
 						wrefresh(build);
+						
+						wscanw(build, "%d", &y);
+						
+						if (y < 0){
+							noecho();
+							continue;
+						}
 						
 						delwin(build);
 						wrefresh(stdscr);
@@ -441,7 +454,9 @@ void draw_map(int camx, int camy, int w, int h){
 					//Check if is a building 
 					unsigned char terrainID = user_colony->planet->terrain[(y*user_colony->planet->size_x)+x];
 					if (terrainID > 16){
-						//16 is minimal size to have a building
+						//16 is minimal size to have a building, 
+						//becuase 1 << 4 = 10000b = 16, but minimal terrain value is 1,
+						//so it's "greater than", not "greater than/equal"
 						unsigned int ID = (terrainID >> 4);
 						printw("%c", structures[ID-1].print);
 						

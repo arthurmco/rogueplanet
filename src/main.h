@@ -3,10 +3,10 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdarg.h>
+#include <stdarg.h>  
 #include <ncurses.h>
 #include <string.h>
-#include <unistd.h>
+#include <unistd.h> //usleep()
 #include "planet.h"
 
 #include "colony.h"
