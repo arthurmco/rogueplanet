@@ -273,6 +273,7 @@ void new_game(){
 	clear();
 					
 	while(1){
+		getmaxyx(stdscr, camh, camw);
 		if (camy<0)
 			camy=0;
 		
@@ -287,8 +288,8 @@ void new_game(){
 		create_title(title, subt);
 		
 		
-		sprintf(title, "Day %4d\t ESC - Pause\t B - Build\t P - Colony Properties\t", user_colony->day);
-		sprintf(subt, " (X: %d, Y: %d)", camx, camy);
+		sprintf(title, "Day %d | ESC - Pause | B - Build | P - Colony Properties\t", user_colony->day);
+		sprintf(subt, " (X: %5d, Y: %5d)", camx, camy);
 		create_status(title, subt);
 		int u = 10000;
 		
