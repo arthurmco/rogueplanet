@@ -41,7 +41,7 @@ typedef struct atmosphere {
 typedef struct planet {
 	unsigned int size_x;
 	unsigned int size_y;
-	unsigned int height;
+	unsigned int height; //planet height, from land to space
 	atmosphere_t* atmosphere;
 	structures_list_t* structures;
 	unsigned char* terrain;

@@ -3,10 +3,11 @@
 /* This is Rogueplanet source code. */
 
 #define PAIR_NORMAL 0
+#define PAIR_ERROR 1
 
-#define PAIR_LAND 1
-#define PAIR_DIRT 2
-#define PAIR_WATER 3
+#define PAIR_LAND 2
+#define PAIR_DIRT 3
+#define PAIR_WATER 4
 
 int main(int argc, char** argv){
 	if(!initscr()) {
@@ -19,15 +20,17 @@ int main(int argc, char** argv){
 	}
 	start_color();
 	init_pair(PAIR_NORMAL, COLOR_WHITE, COLOR_BLACK);
+	init_pair(PAIR_ERROR, COLOR_RED, COLOR_BLACK);
 	init_pair(PAIR_LAND, COLOR_WHITE, COLOR_RED);
 	init_pair(PAIR_DIRT, COLOR_WHITE, COLOR_YELLOW);
 	init_pair(PAIR_WATER, COLOR_WHITE, COLOR_BLUE);
 	
 	
-	create_title("RoguePlanet v0.1", "Menu");
+	
 	
 	while (1){
 	
+		create_title("RoguePlanet v0.1", "Menu");
 		int opt = draw_menu("MAIN MENU", main_menu_items, 3);
 		
 		switch(opt){
@@ -35,7 +38,15 @@ int main(int argc, char** argv){
 				//New game
 				new_game();
 				break;
-			case 3:
+			case 2:
+				//Load game
+				load_game();
+				clear();
+				noecho();
+				break;
+			
+			case 3: 
+				//Exit
 				main_exit(0);
 				break;
 			default:
@@ -243,7 +254,7 @@ void new_game(){
 	attroff(A_DIM);
 	
 	attron(A_BOLD);
-	scanw("%s", user_colony->name);
+	getstr(user_colony->name);
 	attroff(A_BOLD);
 		
 	//Game starts
@@ -252,11 +263,111 @@ void new_game(){
 	
 	terrain_init(user_colony->planet->terrain, 
 		user_colony->planet->size_x, user_colony->planet->size_y,
-		rand()); 
+		user_colony->planet->seed); 
+
+	game_loop();
+	
+}
+
+void save_game(){
+	clear();
+	refresh();
+	
+	create_title("Save Game", NULL);
+	move(3, 2);
+
+	
+	printw("Type the path you want to save your colony, or nothing to go back: ");
+	move(4, 2);
+	
+	refresh();
+	
+	echo();
+	attron(A_BOLD);
+	char* path = (char*)malloc(256);
+	system("zenity --info --text aa");
+	getstr(path);
+	attroff(A_BOLD);
+	
+	if (path[0] == ' ' || path[0] == 0){
+		return;	
+	}
+	
+	savegame_save(*user_colony, path);
+	getch();
 	
 	
+	move(6, 2);
+	printw("Game saved. Press any key to return. ");
+	noecho();
+	refresh();
+	getch();
+	
+	return;
+}
+
+void load_game(){
+	clear();
+	create_title("Load Game", NULL);
+	move(3, 2);
+
+	echo();
+	printw("Please type the path of your game save, or nothing to go back: ");
+	move(4, 2);
+	
+	refresh();
+	
+	attron(A_BOLD);
+	char* path = (char*)malloc(256);
+	scanw("%s", path);
+	attroff(A_BOLD);
+	
+	if (path[0] == ' ' || path[0] == 0){
+		return;	
+	}
+	
+	int load = savegame_load(user_colony, path); 
+	if (load < 0){
+		attron(COLOR_PAIR(PAIR_ERROR)|A_REVERSE|A_BOLD);
+		move(5, 2);
+		printw("ERROR: ");
+		attroff(A_REVERSE);
+		
+		switch(load){
+			case -1:
+				printw(" File not found");
+				break;
+				
+			case -2:
+				printw(" Invalid file");
+				break;
+				
+			default:
+				printw(" Unknown");
+				
+		}
+		
+		noecho();
+		refresh();
+		attroff(A_BOLD|COLOR_PAIR(PAIR_ERROR));
+		getch();
+		load_game();		
+	}
 	
 	
+	move(6, 2);
+	printw("Loading terrain from %s", path);
+	getch();
+	refresh();
+	
+	terrain_init(user_colony->planet->terrain, 
+		user_colony->planet->size_x, user_colony->planet->size_y,
+		user_colony->planet->seed); 
+
+	game_loop();
+}
+	
+void game_loop(){
 	char title[64];
 	char subt[64];
 	
@@ -317,6 +428,16 @@ void new_game(){
 						break;
 					case 2: //Continue game
 						clear();
+						break;
+					case 3:
+						//Load game
+						load_game();
+						noecho();
+						break;
+					case 4:
+						//Save game
+						save_game();
+						noecho();
 						break;
 					case 5:
 						main_exit(0);

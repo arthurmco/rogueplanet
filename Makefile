@@ -1,7 +1,7 @@
 CC=gcc
 CFLAGS = -lncurses -g -Wall
 
-rogueplanet: main.o colony.o planet.o structures.o
+rogueplanet: main.o colony.o planet.o structures.o savegame.o
 	$(CC) -o $@ $^ $(CFLAGS)
 	
 main.o: src/main.c
@@ -15,6 +15,9 @@ planet.o: src/planet.c
 	
 structures.o: src/structures.c
 	$(CC) -o $@ -c src/structures.c $(CFLAGS)
+	
+savegame.o: src/savegame.c
+	$(CC) -o $@ -c src/savegame.c $(CFLAGS)
 	
 clean:
 	rm *.o

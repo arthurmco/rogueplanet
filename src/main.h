@@ -8,6 +8,7 @@
 #include <string.h>
 #include <unistd.h> //usleep()
 #include "planet.h"
+#include "savegame.h"
 
 #include "colony.h"
 
@@ -44,6 +45,9 @@ int draw_menu(const char* title, struct menu* menu_items, int size);
 void print_teletype(char* format, ...);
 
 void draw_map(int camx, int camy, int w, int h);
+void load_game();
+void save_game();
 void new_game();
+void game_loop();
 
 #endif
