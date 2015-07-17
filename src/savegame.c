@@ -4,10 +4,10 @@
 
 	It's a gzipped-tarball containing:
 		data: the colony&planet info
-		structures: structure info (NOT IMPLEmen_populationTED NOW)
+		structures: structure info (NOT IMPLEMENTED NOW)
 */
 
-void savegame_save(colony_t colony, char* filename){
+int savegame_save(colony_t colony, char* filename){
 	
 	//Start saving colony info
 	FILE* f_colony = fopen("data", "w");
@@ -23,12 +23,44 @@ void savegame_save(colony_t colony, char* filename){
 	
 	fflush(f_colony);
 	
-	//compress using tar.
-	
-	//28 is more or less the lenght of "tar -zcf ... data structures "
-	char command[strlen(filename)+28];
-	sprintf(command, "tar -zcf %s data", filename);
-		
+	//compress using tar. 
+	char* cmdargs[] = {"/bin/tar", "-zcf",
+			   filename, "data", NULL};
+
+
+	pid_t tar_pid;
+	tar_pid = fork(); //fork the process...
+	int tar_completed = 0;
+
+	if (tar_pid == -1){
+	  return -4;
+	}
+
+	if (tar_pid == 0){
+	  //and change it to tar
+	  execv(cmdargs[0], cmdargs);
+	}
+
+	//wait for result
+	int res = -1;
+
+ wait_proc:
+	if (waitpid(tar_pid, &res, 0) == -1){
+	  return -4; //maybe tar not found?
+	}
+
+	if (WIFEXITED(res)){
+	  //check error code
+	  int status = WEXITSTATUS(res);
+	  if (status != 0) {
+	    return -3;
+	    } else {
+	    return -3;
+	  }
+	} else {
+	  goto wait_proc; //hasn't exited, loop until it exits.
+	}
+
 	
 	
 }
@@ -59,20 +91,56 @@ char* get_filename_from_path(char* path){
 /* Load a game. Return:
  * 0 if success
  * -1 if file wasn't found
- * -2 if error while parsing file */
+ * -2 if error while parsing file
+ * -3 if could not uncompress */
 int savegame_load(colony_t* colony, char* filename){
 	char tmpfolder[] = "/tmp/";
 	char defaultextract[strlen(tmpfolder)+strlen(filename)+1];
 	
-	sprintf(defaultextract, "%s%s/", tmpfolder, get_filename_from_path((filename)));
-	
-	char command[strlen(defaultextract)+28];
-	sprintf(command, "tar -zxf %s %s", filename, defaultextract);
-	
+	sprintf(defaultextract, "%s%s/", tmpfolder, get_filename_from_path((filename)));	
+
+	mkdir(defaultextract, 0777);
+	//untar file in the specified folder
+	char* cmdargs[] = {"/bin/tar", "-zxf",
+			   filename, "-C", defaultextract, NULL};
+
+
+	pid_t tar_pid;
+	tar_pid = fork(); //fork the process...
+	int tar_completed = 0;
+
+	if (tar_pid == -1){
+	  return -4;
+	}
+
+	if (tar_pid == 0){
+	  //and change it to tar
+	  execv("/bin/tar", cmdargs);
+	}
+
+	//wait for result
+	int res = -1;
+
+ wait_proc:
+	if (waitpid(tar_pid, &res, 0) == -1){
+	  return -4; //maybe tar not found?
+	}
+
+	if (WIFEXITED(res)){
+	  //check error code
+	  int status = WEXITSTATUS(res);
+	  if (status != 0) {
+	    return -3;
+	  }
+	} else {
+	  goto wait_proc; //hasn't exited, loop until it exits.
+	}
+        
 	char datafile[128];
 	sprintf(datafile, "%sdata", defaultextract);
 	
 	FILE* f_data = fopen(datafile, "r");
+	
 	
 	if (f_data == NULL){
 		return -1;	
@@ -83,7 +151,7 @@ int savegame_load(colony_t* colony, char* filename){
 		fgets(line, 255, f_data);
 		
 		//inner loop created to remove unwanted characters
-		while (*line == NULL){
+		while (*line != NULL){
 			if (*line == ' '){
 				line++;	
 				continue;

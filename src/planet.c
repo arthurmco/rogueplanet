@@ -54,7 +54,8 @@ void terrain_init(unsigned char* terrain, int w, int h,
 	unsigned int seed){
 	int p = 0;
 	 int size = (w*h);
-	srand(seed);
+
+	 srand(seed);
 	int a = rand()%100;
 		
 	while(p < size){

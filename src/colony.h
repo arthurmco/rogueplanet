@@ -11,6 +11,7 @@ typedef struct colony {
 	unsigned int women_population;
 	unsigned int hour, day;
 	planet_t* planet;
+     
 } colony_t;
 
 colony_t* colony_init(unsigned int men, unsigned int woman);

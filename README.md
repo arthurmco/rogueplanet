@@ -9,5 +9,5 @@
  * GCC
  * GNU Make
  * ncurses headers 
-
+ * tar (to compress files). Make sure tar is in your PATH.
 

@@ -19,6 +19,8 @@ int main(int argc, char** argv){
 		create_title("RoguePlanet v0.1 [No Colors]", "Menu");
 	}
 	start_color();
+
+	//Initializate color pairs.
 	init_pair(PAIR_NORMAL, COLOR_WHITE, COLOR_BLACK);
 	init_pair(PAIR_ERROR, COLOR_RED, COLOR_BLACK);
 	init_pair(PAIR_LAND, COLOR_WHITE, COLOR_RED);
@@ -249,7 +251,7 @@ void new_game(){
 	print_teletype(intro_colony);
 	
 	echo();
-	attron(A_DIM);
+	attron(A_DIM);  
 	printw("[enter colony name]: ");
 	attroff(A_DIM);
 	
@@ -270,6 +272,7 @@ void new_game(){
 }
 
 void save_game(){
+  timeout(-1);
 	clear();
 	refresh();
 	
@@ -284,12 +287,11 @@ void save_game(){
 	
 	echo();
 	attron(A_BOLD);
-	char* path = (char*)malloc(256);
-	system("zenity --info --text aa");
+	char* path = (char*)calloc(sizeof(char), 256);
 	getstr(path);
 	attroff(A_BOLD);
 	
-	if (path[0] == ' ' || path[0] == 0){
+	if (path[0] == '\n' || path[0] == 0){
 		return;	
 	}
 	
@@ -307,6 +309,8 @@ void save_game(){
 }
 
 void load_game(){
+ load_begin:
+  timeout(-1);
 	clear();
 	create_title("Load Game", NULL);
 	move(3, 2);
@@ -318,15 +322,29 @@ void load_game(){
 	refresh();
 	
 	attron(A_BOLD);
-	char* path = (char*)malloc(256);
+	char* path = (char*)calloc(sizeof(char), 256);
 	scanw("%s", path);
 	attroff(A_BOLD);
 	
-	if (path[0] == ' ' || path[0] == 0){
-		return;	
+	if (path[0] == '\n' || path[0] == 0){
+	  free(path);
+	  return;	
 	}
+	def_prog_mode(); // Save the tty modes		  
+	endwin();	 // End curses mode temporarily	  
+
+	printf("Loading terrain %s", path);
+
+
+
+	user_colony = (colony_t*)malloc(sizeof(colony_t));
+	user_colony->planet = (planet_t*)malloc(sizeof(planet_t));
 	
-	int load = savegame_load(user_colony, path); 
+	int load = savegame_load(user_colony, path);
+	
+	
+	reset_prog_mode(); //Return from state stored by def_prog_mode()
+	refresh(); //Do refresh() to restore the screen data
 	if (load < 0){
 		attron(COLOR_PAIR(PAIR_ERROR)|A_REVERSE|A_BOLD);
 		move(5, 2);
@@ -339,11 +357,15 @@ void load_game(){
 				break;
 				
 			case -2:
-				printw(" Invalid file");
+				printw(" Invalid file: invalid format");
+				break;
+
+		        case -3:
+				printw(" Invalid file: file not compressed");
 				break;
 				
 			default:
-				printw(" Unknown");
+			 printw(" Unknown %d", load);
 				
 		}
 		
@@ -351,14 +373,22 @@ void load_game(){
 		refresh();
 		attroff(A_BOLD|COLOR_PAIR(PAIR_ERROR));
 		getch();
-		load_game();		
+		goto load_begin;		
 	}
 	
 	
 	move(6, 2);
 	printw("Loading terrain from %s", path);
-	getch();
+	
 	refresh();
+
+	printw(".")
+
+	user_colony->planet->terrain = (unsigned char*)
+	  malloc(user_colony->planet->size_x*
+		 user_colony->planet->size_y);
+
+	printw(".");
 	
 	terrain_init(user_colony->planet->terrain, 
 		user_colony->planet->size_x, user_colony->planet->size_y,
