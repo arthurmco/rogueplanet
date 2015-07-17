@@ -267,11 +267,11 @@ void new_game(){
 		user_colony->planet->size_x, user_colony->planet->size_y,
 		user_colony->planet->seed); 
 
-	game_loop();
+	game_loop(-1, -1);
 	
 }
 
-void save_game(){
+void save_game(struct gamefile gf){
   timeout(-1);
 	clear();
 	refresh();
@@ -295,7 +295,7 @@ void save_game(){
 		return;	
 	}
 	
-	savegame_save(*user_colony, path);
+	savegame_save(gf, path);
 	getch();
 	
 	
@@ -339,8 +339,11 @@ void load_game(){
 
 	user_colony = (colony_t*)malloc(sizeof(colony_t));
 	user_colony->planet = (planet_t*)malloc(sizeof(planet_t));
+
+	struct gamefile gf;
+	gf.c = user_colony;
 	
-	int load = savegame_load(user_colony, path);
+	int load = savegame_load(&gf, path);
 	
 	
 	reset_prog_mode(); //Return from state stored by def_prog_mode()
@@ -382,7 +385,7 @@ void load_game(){
 	
 	refresh();
 
-	printw(".")
+	printw(".");
 
 	user_colony->planet->terrain = (unsigned char*)
 	  malloc(user_colony->planet->size_x*
@@ -394,16 +397,19 @@ void load_game(){
 		user_colony->planet->size_x, user_colony->planet->size_y,
 		user_colony->planet->seed); 
 
-	game_loop();
+	game_loop(gf.camera_x, gf.camera_y);
 }
 	
-void game_loop(){
+void game_loop(int camera_x, int camera_y){
 	char title[64];
 	char subt[64];
 	
 	int camx, camy, camw, camh;
-	camx = rand()%(user_colony->planet->size_x/2);
-	camy = rand()%(user_colony->planet->size_y/2);
+	camx = camera_x == -1 ? rand()%(user_colony->planet->size_x/2)
+	  : camera_x;
+	camy = camera_y == -1 ? rand()%(user_colony->planet->size_y/2)
+	  : camera_y;
+	
 	getmaxyx(stdscr, camh, camw);
 	noecho();
 	keypad(stdscr, TRUE);
@@ -464,12 +470,17 @@ void game_loop(){
 						load_game();
 						noecho();
 						break;
-					case 4:
-						//Save game
-						save_game();
+				       case 4: {
+					        //Save game
+					 struct gamefile gf;
+					 gf.camera_x = camx;
+					 gf.camera_y = camy;
+					 gf.c = user_colony;
+					 save_game(gf);
 						noecho();
-						break;
-					case 5:
+						break;}
+
+  				       case 5:
 						main_exit(0);
 						break;
 					default:

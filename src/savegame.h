@@ -13,9 +13,13 @@
 
 /* Game save manager */
 
+struct gamefile {
+  colony_t* c;
+  int camera_x, camera_y;
+};
 
-int savegame_save(colony_t colony, char* filename);
-int savegame_load(colony_t* colony, char* filename);
+  int savegame_save(struct gamefile game, char* filename);
+int savegame_load(struct gamefile* game, char* filename);
 char* get_filename_from_path(char* path);
 
 #endif

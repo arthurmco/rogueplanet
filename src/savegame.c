@@ -7,8 +7,10 @@
 		structures: structure info (NOT IMPLEMENTED NOW)
 */
 
-int savegame_save(colony_t colony, char* filename){
-	
+int savegame_save(struct gamefile game, char* filename){
+
+  colony_t colony = *game.c;
+  
 	//Start saving colony info
 	FILE* f_colony = fopen("data", "w");
 	fprintf(f_colony, "colony.name: %s\n", colony.name);
@@ -20,7 +22,9 @@ int savegame_save(colony_t colony, char* filename){
 	fprintf(f_colony, "planet.size: %dx%d\n", colony.planet->size_x, colony.planet->size_y); 
 	fprintf(f_colony, "planet.height: %d\n", colony.planet->height); 
 	fprintf(f_colony, "planet.seed: %d\n", colony.planet->seed);
-	
+
+	//Game info
+	fprintf(f_colony, "game.camera: %d %d\n", game.camera_x, game.camera_y);
 	fflush(f_colony);
 	
 	//compress using tar. 
@@ -93,7 +97,10 @@ char* get_filename_from_path(char* path){
  * -1 if file wasn't found
  * -2 if error while parsing file
  * -3 if could not uncompress */
-int savegame_load(colony_t* colony, char* filename){
+int savegame_load(struct gamefile* game, char* filename){
+
+  colony_t* colony = game->c; 
+  
 	char tmpfolder[] = "/tmp/";
 	char defaultextract[strlen(tmpfolder)+strlen(filename)+1];
 	
@@ -212,6 +219,11 @@ int savegame_load(colony_t* colony, char* filename){
 			
 			if(IS_PROPERTY("planet.size")){
 				sscanf(p_value, "%dx%d", &(colony->planet->size_x), &(colony->planet->size_y));
+				break;
+			}
+
+			if(IS_PROPERTY("game.camera")){
+			  sscanf(p_value, "%d %d", &(game->camera_x), &(game->camera_y));
 				break;
 			}
 		

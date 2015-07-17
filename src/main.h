@@ -46,8 +46,8 @@ void print_teletype(char* format, ...);
 
 void draw_map(int camx, int camy, int w, int h);
 void load_game();
-void save_game();
+void save_game(struct gamefile gf);
 void new_game();
-void game_loop();
+void game_loop(int camerax, int cameray);
 
 #endif
