@@ -397,6 +397,15 @@ void load_game(){
 		user_colony->planet->size_x, user_colony->planet->size_y,
 		user_colony->planet->seed); 
 
+	//Create terrains
+	structures_list_t* sl = user_colony->planet->structures;
+
+	while (sl != NULL){
+	  structures_print_on_terrain(user_colony->planet,
+				      sl->instance_structure);
+	  sl = sl->next_structure;
+	}
+		
 	game_loop(gf.camera_x, gf.camera_y);
 }
 	
@@ -415,8 +424,10 @@ void game_loop(int camera_x, int camera_y){
 	keypad(stdscr, TRUE);
 	timeout(10);
 
+	if (camera_x < 0)
+	  structures_init(user_colony->planet, camx, camy);
 	
-	structures_init(user_colony->planet, camx, camy);
+
 	clear();
 					
 	while(1){

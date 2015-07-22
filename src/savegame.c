@@ -12,7 +12,7 @@ int savegame_save(struct gamefile game, char* filename){
   colony_t colony = *game.c;
   
 	//Start saving colony info
-	FILE* f_colony = fopen("data", "w");
+	FILE* f_colony = fopen("/tmp/data", "w");
 	fprintf(f_colony, "colony.name: %s\n", colony.name);
 	fprintf(f_colony, "colony.men_population: %d\n", colony.men_population);
 	fprintf(f_colony, "colony.women_population: %d\n", colony.women_population);
@@ -26,10 +26,32 @@ int savegame_save(struct gamefile game, char* filename){
 	//Game info
 	fprintf(f_colony, "game.camera: %d %d\n", game.camera_x, game.camera_y);
 	fflush(f_colony);
+	fclose(f_colony);
+
+	//Now save all structures
+	FILE* f_structures = fopen("/tmp/structs", "w");
+
+	structures_list_t* struct_item = colony.planet->structures;
+	fprintf(f_structures, "# Instance StructID X Y\n");
+	do {
+	  //Instance ID, Structure ID, X Pos, Y Pos
+
+	  fprintf(f_structures, "%d %d %d %d\n",
+		  struct_item->instance_structure.ID,
+		  struct_item->instance_structure.structure.SID,
+		  struct_item->instance_structure.structure.x,
+		  struct_item->instance_structure.structure.y);		  
+	  
+	  struct_item = struct_item->next_structure;
+	} while (struct_item != NULL);
+
+	fflush(f_structures);
+	fclose(f_structures);
 	
-	//compress using tar. 
-	char* cmdargs[] = {"/bin/tar", "-zcf",
-			   filename, "data", NULL};
+	//compress using tar.
+	chdir("/tmp");
+	char* cmdargs[] = {"/bin/tar", "-zcf", filename,
+			   "data", "structs", NULL};
 
 
 	pid_t tar_pid;
@@ -143,8 +165,9 @@ int savegame_load(struct gamefile* game, char* filename){
 	  goto wait_proc; //hasn't exited, loop until it exits.
 	}
         
-	char datafile[128];
+	char datafile[128], structfile[128];
 	sprintf(datafile, "%sdata", defaultextract);
+	sprintf(structfile, "%sstructs", defaultextract);
 	
 	FILE* f_data = fopen(datafile, "r");
 	
@@ -231,7 +254,84 @@ int savegame_load(struct gamefile* game, char* filename){
 		
 		
 	}
+
+	/*** Now get the structure ***/
 	
+	FILE* f_struct = fopen(structfile, "r");
+
+
+	if (line != NULL)
+	  free(line);
+	  
+	//We don't need much for this one.
+	line = malloc(32*sizeof(char)); 
+
+	//The first element will begin our structure
+	structures_init(colony->planet, 0, 0);
+
+	do {
+	  fgets(line, 31, f_struct);
+
+	} while (line[0] != '#');
+
+	/* Get first element, separated from others
+	   Since the first element is the list handle himself,
+	   the method of creating him is different */ 
+	unsigned int SID = 0, x = 0, y = 0;
+	  
+	  fscanf(f_struct, "%u %u %u %u",
+		 &(colony->planet->structures->instance_structure.ID),
+		 &SID, &x, &y);
+
+	  //Get all information of structure
+	  memcpy(&colony->planet->structures->instance_structure.structure,
+		 &structures[SID-1], sizeof(structure_t));
+
+	  colony->planet->structures->instance_structure.structure.x = x;
+  	  colony->planet->structures->instance_structure.structure.y = y;
+	  //Get new line.
+	  
+	
+	  structures_list_t* sl_prev = colony->planet->structures;
+	while (!feof(f_struct)){
+	  fgets(line, 31, f_struct);
+	  int charindex = 0;
+	analyze_char:
+
+	  if (charindex > 31)
+	    continue;
+	  
+	  switch (line[charindex]){
+	  case '#': //comment
+	    continue;
+	    
+	  case ' ': //space
+	    charindex++;
+	    goto analyze_char;
+	    break;
+
+	  }	 
+	  
+	  structures_list_t* sl = malloc(sizeof(structures_list_t));
+	  sl->prev_structure = sl_prev;
+	  sl_prev->next_structure = sl;
+	  sl->next_structure = NULL;
+	  
+	  sscanf(line, "%u %u %u %u",
+		 &(sl->instance_structure.ID),
+		 &SID, &x, &y);
+
+	  //Get all information of structure
+	  memcpy(&sl->instance_structure.structure,
+		 &structures[SID-1], sizeof(structure_t));
+
+	  sl->instance_structure.structure.x = x;
+  	  sl->instance_structure.structure.y = y;	  
+
+	  sl_prev = sl;
+
+	}
+	free(line);
 	return 0;
 	
 }

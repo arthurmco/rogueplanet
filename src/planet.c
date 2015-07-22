@@ -15,6 +15,11 @@ void planet_init(planet_t* planet){
 	
 }
 
+/** Initialize the structure and creates a colony center
+ * planet = pointer to the planet that structures will be in
+ *  startx = X Starting point, or 0 if you don't want any colony center
+ *  starty = Y Starting point, or 0 if... 
+ **/
 void structures_init(planet_t* planet, unsigned int startx, unsigned int starty){
 
 	//Create a colony center where you started
@@ -25,7 +30,10 @@ void structures_init(planet_t* planet, unsigned int startx, unsigned int starty)
 	memcpy(&planet->structures->instance_structure.structure, &structures[0], sizeof(structure_t));
 	planet->structures->instance_structure.structure.x = startx + 5;
 	planet->structures->instance_structure.structure.y = starty + 5;
-	structures_print_on_terrain(planet, planet->structures->instance_structure);
+
+	
+	if (startx > 0 && starty > 0)
+	  structures_print_on_terrain(planet, planet->structures->instance_structure);
 }
 
 void structures_print_on_terrain(planet_t* planet, structure_instance_t s){

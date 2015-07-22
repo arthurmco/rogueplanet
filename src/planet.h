@@ -26,7 +26,7 @@
 		T_BUILDING = 32
 	};
 	
-/* Atmosphere definitions */
+/* Atmosphere definitions. Not used yet */
 typedef struct atmosphere {
 	struct atmosphere* prev_gas;
 	unsigned int gas;	  
