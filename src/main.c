@@ -271,6 +271,32 @@ void new_game(){
 	
 }
 
+//This function expands the environment variables
+//that would be here
+char* expand_path(char* path){
+	char* expanded_path = (char*)calloc(sizeof(char), 255);
+	
+	while (*path != 0){
+		
+		switch (*path){
+			case '~':
+				strcat(expanded_path, getenv("HOME"));
+				break;
+			default: {
+				char s[] = {*path, 0};
+				strcat(expanded_path, s);
+				break;
+			}
+		}
+		
+	
+		
+		path++;
+	}
+	
+	return expanded_path;
+}
+
 void save_game(struct gamefile gf){
   timeout(-1);
 	clear();
@@ -295,7 +321,7 @@ void save_game(struct gamefile gf){
 		return;	
 	}
 	
-	savegame_save(gf, path);
+	savegame_save(gf, expand_path(path));
 	getch();
 	
 	
@@ -343,7 +369,7 @@ void load_game(){
 	struct gamefile gf;
 	gf.c = user_colony;
 	
-	int load = savegame_load(&gf, path);
+	int load = savegame_load(&gf, expand_path(path));
 	
 	
 	reset_prog_mode(); //Return from state stored by def_prog_mode()
