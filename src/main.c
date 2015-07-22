@@ -566,7 +566,8 @@ void game_loop(int camera_x, int camera_y){
 						instance.structure = structures[building-1];
 						instance.structure.x = x;
 						instance.structure.y = y;
-						
+
+										
 						//update logic and visual
 						structures_add(user_colony->planet->structures, &instance);
 						structures_print_on_terrain(user_colony->planet, instance);

@@ -212,7 +212,7 @@ int savegame_load(struct gamefile* game, char* filename){
 			if(IS_PROPERTY("colony.name")){
 				colony->name = (char*)malloc(strlen(p_value)+1);
 				strcpy(colony->name, p_value);
-				colony->name[p_length-1] = 0; //take off '\n'
+				colony->name[strlen(p_value)-1] = 0; //take off '\n'
 				break; //next line
 			}
 			
