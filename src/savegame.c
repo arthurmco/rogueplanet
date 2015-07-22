@@ -188,7 +188,7 @@ int savegame_load(struct gamefile* game, char* filename){
 				continue;
 			}
 			
-			if (*line == '#'){
+			if (*line == '#' || *line == '\n'){
 				//Comment
 				break;
 			}
