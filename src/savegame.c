@@ -36,7 +36,7 @@ int savegame_save(struct gamefile game, char* filename){
 	do {
 	  //Instance ID, Structure ID, X Pos, Y Pos
 
-	  fprintf(f_structures, "%d %d %d %d\n",
+	  fprintf(f_structures, "%d %u %u %u\n",
 		  struct_item->instance_structure.ID,
 		  struct_item->instance_structure.structure.SID,
 		  struct_item->instance_structure.structure.x,
@@ -189,7 +189,7 @@ int savegame_load(struct gamefile* game, char* filename){
 			}
 			
 			if (*line == '#'){
-				//Commen_populationt
+				//Comment
 				break;
 			}
 			
@@ -212,6 +212,7 @@ int savegame_load(struct gamefile* game, char* filename){
 			if(IS_PROPERTY("colony.name")){
 				colony->name = (char*)malloc(strlen(p_value)+1);
 				strcpy(colony->name, p_value);
+				colony->name[p_length-1] = 0; //take off '\n'
 				break; //next line
 			}
 			
@@ -280,7 +281,7 @@ int savegame_load(struct gamefile* game, char* filename){
 	   the method of creating him is different */ 
 	unsigned int SID = 0, x = 0, y = 0;
 	  
-	  fscanf(f_struct, "%u %u %u %u",
+	  fscanf(f_struct, "%d %u %u %u",
 		 &(colony->planet->structures->instance_structure.ID),
 		 &SID, &x, &y);
 
@@ -318,7 +319,7 @@ int savegame_load(struct gamefile* game, char* filename){
 	  sl_prev->next_structure = sl;
 	  sl->next_structure = NULL;
 	  
-	  sscanf(line, "%u %u %u %u",
+	  sscanf(line, "%d %u %u %u",
 		 &(sl->instance_structure.ID),
 		 &SID, &x, &y);
 
