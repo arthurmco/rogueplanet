@@ -80,15 +80,16 @@ int savegame_save(struct gamefile game, char* filename){
 	  int status = WEXITSTATUS(res);
 	  if (status != 0) {
 	    return -3;
-	    } else {
-	    return -3;
 	  }
 	} else {
 	  goto wait_proc; //hasn't exited, loop until it exits.
 	}
 
-	
-	
+
+	//Delete temporary files
+	remove("data");
+	remove("structs");
+	return 0;
 }
 
 char* get_filename_from_path(char* path){
@@ -332,6 +333,12 @@ int savegame_load(struct gamefile* game, char* filename){
 
 	}
 	free(line);
+
+	//Delete temporary files and temporary directory
+	remove(datafile);
+	remove(structfile);
+	rmdir(defaultextract);
+	
 	return 0;
 	
 }

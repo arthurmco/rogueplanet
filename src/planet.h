@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <string.h> //for memcpy()
 
-/*	Elements */
+/*	Elements. Not used yet */
 	enum Gases {
 		G_OXYGEN = 0x01,
 		G_CARBON_MONOXIDE = 0x02,
@@ -21,9 +21,7 @@
 		T_WATER = 3,
 		
 		
-		T_LOWELEVATION = 8,
-		T_HIGHELEVATION = 16,
-		T_BUILDING = 32
+		T_BUILDING = 16,
 	};
 	
 /* Atmosphere definitions. Not used yet */
