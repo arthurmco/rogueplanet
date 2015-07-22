@@ -25,5 +25,18 @@ void structures_add(structures_list_t* list, structure_instance_t* s){
 	
 }
 
-void structures_remove(structures_list_t* list, structure_instance_t* s){
+void structures_remove(structures_list_t** s){
+  structures_list_t* prev = (*s)->prev_structure;
+  structures_list_t* next = (*s)->next_structure;
+
+  if (prev != NULL)
+    prev->next_structure = next;
+
+  if (next != NULL)
+    next->prev_structure = prev;
+
+  if (prev == NULL)
+    *s = next; //We can't delete the first element because he's a handle to the list.
+  else
+    free(*s);
 }

@@ -45,7 +45,7 @@ typedef struct structures_list {
 
 void find_structure(structures_list_t* list, structure_instance_t* s);
 void structures_add(structures_list_t* list, structure_instance_t* s);
-void structures_remove(structures_list_t* list, structure_instance_t* s);
+void structures_remove(structures_list_t** s);
 
 
 #endif
